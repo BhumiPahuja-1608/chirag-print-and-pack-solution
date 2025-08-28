@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chirag Print & Pack Solutions - Billing System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-shadow { box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .hover-scale { transition: transform 0.2s; }
+        .hover-scale:hover { transform: scale(1.02); }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-white p-2 rounded-lg">
+                        <svg class="w-8 h-8 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4zM18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold">Chirag Print & Pack Solutions</h1>
+                        <p class="text-purple-100 text-sm">Ghaziabad, Uttar Pradesh</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm opacity-90">GST: 09XXXXX1234X1Z5</p>
+                    <p class="text-sm opacity-90">Contact: +91-93124 26124</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="container mx-auto px-6">
+            <div class="flex space-x-8">
+                <button onclick="showSection('billing')" class="nav-btn py-4 px-2 border-b-2 border-purple-500 text-purple-600 font-medium">
+                    Generate Bill
+                </button>
+                <button onclick="showSection('history')" class="nav-btn py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                    Transaction History
+                </button>
+                <button onclick="showSection('accounts')" class="nav-btn py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                    Bank Accounts
+                </button>
+                <button onclick="showSection('dashboard')" class="nav-btn py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                    Dashboard
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-8">
+        <!-- Billing Section -->
+        <div id="billing-section" class="section">
+            <div class="bg-white rounded-xl card-shadow p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Generate New Bill</h2>
+                
+                <form id="billForm" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Customer Name</label>
+                            <input type="text" id="customerName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Enter customer name" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Customer Phone</label>
+                            <input type="tel" id="customerPhone" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="+91-9876543210">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Customer Address</label>
+                            <textarea id="customerAddress" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" rows="2" placeholder="Enter customer address"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="border-t pt-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Items</h3>
+                        <div id="itemsList" class="space-y-4">
+                            <div class="item-row grid grid-cols-1 md:grid-cols-5 gap-4 p-4 bg-gray-50 rounded-lg">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Item/Service</label>
+                                    <input type="text" class="item-name w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Business Cards" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                                    <input type="number" class="item-qty w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="1000" min="1" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Rate (₹)</label>
+                                    <input type="number" class="item-rate w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="2.50" step="0.01" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Amount (₹)</label>
+                                    <input type="number" class="item-amount w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100" readonly>
+                                </div>
+                                <div class="flex items-end">
+                                    <button type="button" onclick="removeItem(this)" class="px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" onclick="addItem()" class="mt-4 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Add Item</button>
+                    </div>
+
+                    <div class="border-t pt-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+                                <select id="paymentMethod" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                    <option value="cash">Cash</option>
+                                    <option value="upi">UPI</option>
+                                    <option value="card">Card</option>
+                                    <option value="bank_transfer">Bank Transfer</option>
+                                    <option value="cheque">Cheque</option>
+                                </select>
+                            </div>
+                            <div class="bg-purple-50 p-4 rounded-lg">
+                                <div class="text-right">
+                                    <p class="text-sm text-gray-600">Subtotal: ₹<span id="subtotal">0.00</span></p>
+                                    <p class="text-sm text-gray-600">GST (18%): ₹<span id="gst">0.00</span></p>
+                                    <p class="text-lg font-bold text-purple-600">Total: ₹<span id="total">0.00</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-4">
+                        <button type="submit" class="flex-1 bg-purple-600 text-white py-3 px-6 rounded-lg hover:bg-purple-700 font-medium hover-scale">
+                            Generate PDF Bill
+                        </button>
+                        <button type="button" onclick="saveBill()" class="bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 font-medium hover-scale">
+                            Save Bill
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Transaction History Section -->
+        <div id="history-section" class="section hidden">
+            <div class="bg-white rounded-xl card-shadow p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Transaction History</h2>
+                    <div class="flex space-x-4">
+                        <input type="date" id="filterDate" class="px-4 py-2 border border-gray-300 rounded-lg">
+                        <select id="filterPayment" class="px-4 py-2 border border-gray-300 rounded-lg">
+                            <option value="">All Payments</option>
+                            <option value="cash">Cash</option>
+                            <option value="upi">UPI</option>
+                            <option value="card">Card</option>
+                            <option value="bank_transfer">Bank Transfer</option>
+                            <option value="cheque">Cheque</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full table-auto">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bill #</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionTable" class="bg-white divide-y divide-gray-200">
+                            <!-- Transactions will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bank Accounts Section -->
+        <div id="accounts-section" class="section hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white rounded-xl card-shadow p-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Bank Accounts</h2>
+                    
+                    <div class="space-y-6">
+                        <div class="border border-gray-200 rounded-lg p-6 hover-scale">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-gray-800">Primary Business Account</h3>
+                                <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Active</span>
+                            </div>
+                            <div class="space-y-2 text-sm text-gray-600">
+                                <p><span class="font-medium">Bank:</span> State Bank of India</p>
+                                <p><span class="font-medium">Account No:</span> 1234567890123456</p>
+                                <p><span class="font-medium">IFSC:</span> SBIN0001234</p>
+                                <p><span class="font-medium">Branch:</span> Ghaziabad Main Branch</p>
+                                <p class="text-lg font-bold text-green-600 mt-4">Balance: ₹2,45,680.50</p>
+                            </div>
+                        </div>
+
+                        <div class="border border-gray-200 rounded-lg p-6 hover-scale">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-gray-800">Savings Account</h3>
+                                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">Active</span>
+                            </div>
+                            <div class="space-y-2 text-sm text-gray-600">
+                                <p><span class="font-medium">Bank:</span> HDFC Bank</p>
+                                <p><span class="font-medium">Account No:</span> 9876543210987654</p>
+                                <p><span class="font-medium">IFSC:</span> HDFC0001234</p>
+                                <p><span class="font-medium">Branch:</span> Ghaziabad Sector 4</p>
+                                <p class="text-lg font-bold text-blue-600 mt-4">Balance: ₹1,25,340.75</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl card-shadow p-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Recent Transactions</h2>
+                    
+                    <div class="space-y-4" id="recentTransactions">
+                        <!-- Recent transactions will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard-section" class="section hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl card-shadow p-6 hover-scale">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-green-100 rounded-full">
+                            <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zM14 6a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2h6zM4 14a2 2 0 002 2h8a2 2 0 002-2v-2H4v2z"/>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Today's Revenue</p>
+                            <p class="text-2xl font-bold text-gray-900">₹<span id="todayRevenue">0</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl card-shadow p-6 hover-scale">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-blue-100 rounded-full">
+                            <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Bills Generated</p>
+                            <p class="text-2xl font-bold text-gray-900"><span id="billsCount">0</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl card-shadow p-6 hover-scale">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-purple-100 rounded-full">
+                            <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Total Customers</p>
+                            <p class="text-2xl font-bold text-gray-900"><span id="customersCount">0</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl card-shadow p-6 hover-scale">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-yellow-100 rounded-full">
+                            <svg class="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Monthly Revenue</p>
+                            <p class="text-2xl font-bold text-gray-900">₹<span id="monthlyRevenue">0</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl card-shadow p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Business Overview</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Popular Services</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-700">Business Cards</span>
+                                <span class="font-semibold text-purple-600">45%</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-700">Packaging Solutions</span>
+                                <span class="font-semibold text-purple-600">30%</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-700">Brochures</span>
+                                <span class="font-semibold text-purple-600">25%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Payment Methods</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-700">UPI</span>
+                                <span class="font-semibold text-green-600">40%</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-700">Cash</span>
+                                <span class="font-semibold text-green-600">35%</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-700">Bank Transfer</span>
+                                <span class="font-semibold text-green-600">25%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        let billCounter = parseInt(localStorage.getItem('billCounter')) || 1;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDashboard();
+            loadTransactionHistory();
+            loadRecentTransactions();
+            
+            // Add event listeners for item calculations
+            document.addEventListener('input', function(e) {
+                if (e.target.classList.contains('item-qty') || e.target.classList.contains('item-rate')) {
+                    calculateItemAmount(e.target);
+                    calculateTotal();
+                }
+            });
+
+            // Add event listeners for filters
+            document.getElementById('filterDate').addEventListener('change', filterTransactions);
+            document.getElementById('filterPayment').addEventListener('change', filterTransactions);
+        });
+
+        // Navigation
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName + '-section').classList.remove('hidden');
+            
+            // Update navigation
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('border-purple-500', 'text-purple-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            event.target.classList.remove('border-transparent', 'text-gray-500');
+            event.target.classList.add('border-purple-500', 'text-purple-600');
+        }
+
+        // Item management
+        function addItem() {
+            const itemsList = document.getElementById('itemsList');
+            const newItem = document.createElement('div');
+            newItem.className = 'item-row grid grid-cols-1 md:grid-cols-5 gap-4 p-4 bg-gray-50 rounded-lg';
+            newItem.innerHTML = `
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Item/Service</label>
+                    <input type="text" class="item-name w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Enter item" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                    <input type="number" class="item-qty w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="1" min="1" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Rate (₹)</label>
+                    <input type="number" class="item-rate w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="0.00" step="0.01" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Amount (₹)</label>
+                    <input type="number" class="item-amount w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100" readonly>
+                </div>
+                <div class="flex items-end">
+                    <button type="button" onclick="removeItem(this)" class="px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">Remove</button>
+                </div>
+            `;
+            itemsList.appendChild(newItem);
+        }
+
+        function removeItem(button) {
+            button.closest('.item-row').remove();
+            calculateTotal();
+        }
+
+        function calculateItemAmount(input) {
+            const row = input.closest('.item-row');
+            const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+            const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
+            const amount = qty * rate;
+            row.querySelector('.item-amount').value = amount.toFixed(2);
+        }
+
+        function calculateTotal() {
+            let subtotal = 0;
+            document.querySelectorAll('.item-amount').forEach(input => {
+                subtotal += parseFloat(input.value) || 0;
+            });
+            
+            const gst = subtotal * 0.18;
+            const total = subtotal + gst;
+            
+            document.getElementById('subtotal').textContent = subtotal.toFixed(2);
+            document.getElementById('gst').textContent = gst.toFixed(2);
+            document.getElementById('total').textContent = total.toFixed(2);
+        }
+
+        // Bill generation
+        document.getElementById('billForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            generatePDF();
+        });
+
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Company header
+            doc.setFontSize(20);
+            doc.setFont(undefined, 'bold');
+            doc.text('Chirag Print & Pack Solutions', 20, 20);
+            
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            doc.text('Ghaziabad, Uttar Pradesh', 20, 28);
+            doc.text('GST: 09XXXXX1234X1Z5 | Phone: +91-9876543210', 20, 34);
+            
+            // Bill details
+            const billNo = 'CPP' + String(billCounter).padStart(4, '0');
+            const date = new Date().toLocaleDateString('en-IN');
+            
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('INVOICE', 20, 50);
+            
+            doc.setFont(undefined, 'normal');
+            doc.text(`Bill No: ${billNo}`, 20, 60);
+            doc.text(`Date: ${date}`, 20, 68);
+            
+            // Customer details
+            const customerName = document.getElementById('customerName').value;
+            const customerPhone = document.getElementById('customerPhone').value;
+            const customerAddress = document.getElementById('customerAddress').value;
+            
+            doc.text('Bill To:', 20, 85);
+            doc.text(customerName, 20, 93);
+            if (customerPhone) doc.text(customerPhone, 20, 101);
+            if (customerAddress) doc.text(customerAddress, 20, 109);
+            
+            // Items table
+            let yPos = 130;
+            doc.setFont(undefined, 'bold');
+            doc.text('Item/Service', 20, yPos);
+            doc.text('Qty', 80, yPos);
+            doc.text('Rate', 110, yPos);
+            doc.text('Amount', 150, yPos);
+            
+            doc.line(20, yPos + 3, 190, yPos + 3);
+            yPos += 10;
+            
+            doc.setFont(undefined, 'normal');
+            let subtotal = 0;
+            
+            document.querySelectorAll('.item-row').forEach(row => {
+                const name = row.querySelector('.item-name').value;
+                const qty = row.querySelector('.item-qty').value;
+                const rate = parseFloat(row.querySelector('.item-rate').value);
+                const amount = parseFloat(row.querySelector('.item-amount').value);
+                
+                doc.text(name, 20, yPos);
+                doc.text(qty, 80, yPos);
+                doc.text('₹' + rate.toFixed(2), 110, yPos);
+                doc.text('₹' + amount.toFixed(2), 150, yPos);
+                
+                subtotal += amount;
+                yPos += 8;
+            });
+            
+            // Totals
+            yPos += 10;
+            doc.line(20, yPos, 190, yPos);
+            yPos += 10;
+            
+            const gst = subtotal * 0.18;
+            const total = subtotal + gst;
+            
+            doc.text('Subtotal:', 120, yPos);
+            doc.text('₹' + subtotal.toFixed(2), 150, yPos);
+            yPos += 8;
+            
+            doc.text('GST (18%):', 120, yPos);
+            doc.text('₹' + gst.toFixed(2), 150, yPos);
+            yPos += 8;
+            
+            doc.setFont(undefined, 'bold');
+            doc.text('Total:', 120, yPos);
+            doc.text('₹' + total.toFixed(2), 150, yPos);
+            
+            // Payment method
+            yPos += 15;
+            doc.setFont(undefined, 'normal');
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            doc.text(`Payment Method: ${paymentMethod.toUpperCase()}`, 20, yPos);
+            
+            // Footer
+            doc.setFontSize(8);
+            doc.text('Thank you for your business!', 20, 280);
+            
+            // Save PDF
+            doc.save(`Invoice_${billNo}.pdf`);
+            
+            // Save transaction
+            saveBillData(billNo, customerName, customerPhone, customerAddress, total, paymentMethod);
+        }
+
+        function saveBill() {
+            const customerName = document.getElementById('customerName').value;
+            if (!customerName) {
+                alert('Please enter customer name');
+                return;
+            }
+            
+            const billNo = 'CPP' + String(billCounter).padStart(4, '0');
+            const customerPhone = document.getElementById('customerPhone').value;
+            const customerAddress = document.getElementById('customerAddress').value;
+            const total = parseFloat(document.getElementById('total').textContent);
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            
+            saveBillData(billNo, customerName, customerPhone, customerAddress, total, paymentMethod);
+            alert('Bill saved successfully!');
+        }
+
+        function saveBillData(billNo, customerName, customerPhone, customerAddress, total, paymentMethod) {
+            const transaction = {
+                id: billNo,
+                date: new Date().toISOString(),
+                customer: customerName,
+                phone: customerPhone,
+                address: customerAddress,
+                amount: total,
+                paymentMethod: paymentMethod,
+                status: 'Completed'
+            };
+            
+            transactions.unshift(transaction);
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            localStorage.setItem('billCounter', String(billCounter + 1));
+            billCounter++;
+            
+            updateDashboard();
+            loadTransactionHistory();
+            loadRecentTransactions();
+            
+            // Reset form
+            document.getElementById('billForm').reset();
+            document.getElementById('subtotal').textContent = '0.00';
+            document.getElementById('gst').textContent = '0.00';
+            document.getElementById('total').textContent = '0.00';
+        }
+
+        // Transaction history
+        function loadTransactionHistory() {
+            const tbody = document.getElementById('transactionTable');
+            tbody.innerHTML = '';
+            
+            transactions.forEach(transaction => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${transaction.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(transaction.date).toLocaleDateString('en-IN')}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.customer}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹${transaction.amount.toFixed(2)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${transaction.paymentMethod.toUpperCase()}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                            ${transaction.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="viewTransaction('${transaction.id}')" class="text-purple-600 hover:text-purple-900 mr-3">View</button>
+                        <button onclick="deleteTransaction('${transaction.id}')" class="text-red-600 hover:text-red-900">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function filterTransactions() {
+            const dateFilter = document.getElementById('filterDate').value;
+            const paymentFilter = document.getElementById('filterPayment').value;
+            
+            let filteredTransactions = transactions;
+            
+            if (dateFilter) {
+                filteredTransactions = filteredTransactions.filter(t => 
+                    new Date(t.date).toDateString() === new Date(dateFilter).toDateString()
+                );
+            }
+            
+            if (paymentFilter) {
+                filteredTransactions = filteredTransactions.filter(t => 
+                    t.paymentMethod === paymentFilter
+                );
+            }
+            
+            const tbody = document.getElementById('transactionTable');
+            tbody.innerHTML = '';
+            
+            filteredTransactions.forEach(transaction => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${transaction.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(transaction.date).toLocaleDateString('en-IN')}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.customer}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹${transaction.amount.toFixed(2)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${transaction.paymentMethod.toUpperCase()}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                            ${transaction.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="viewTransaction('${transaction.id}')" class="text-purple-600 hover:text-purple-900 mr-3">View</button>
+                        <button onclick="deleteTransaction('${transaction.id}')" class="text-red-600 hover:text-red-900">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function viewTransaction(id) {
+            const transaction = transactions.find(t => t.id === id);
+            if (transaction) {
+                alert(`Transaction Details:\n\nBill No: ${transaction.id}\nCustomer: ${transaction.customer}\nAmount: ₹${transaction.amount.toFixed(2)}\nPayment: ${transaction.paymentMethod}\nDate: ${new Date(transaction.date).toLocaleString('en-IN')}`);
+            }
+        }
+
+        function deleteTransaction(id) {
+            if (confirm('Are you sure you want to delete this transaction?')) {
+                transactions = transactions.filter(t => t.id !== id);
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+                loadTransactionHistory();
+                updateDashboard();
+                loadRecentTransactions();
+            }
+        }
+
+        // Recent transactions for bank accounts section
+        function loadRecentTransactions() {
+            const container = document.getElementById('recentTransactions');
+            container.innerHTML = '';
+            
+            const recent = transactions.slice(0, 5);
+            
+            recent.forEach(transaction => {
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center p-4 bg-gray-50 rounded-lg';
+                div.innerHTML = `
+                    <div>
+                        <p class="font-medium text-gray-900">${transaction.customer}</p>
+                        <p class="text-sm text-gray-500">${new Date(transaction.date).toLocaleDateString('en-IN')}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-semibold text-green-600">+₹${transaction.amount.toFixed(2)}</p>
+                        <p class="text-sm text-gray-500">${transaction.paymentMethod.toUpperCase()}</p>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            
+            if (recent.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">No recent transactions</p>';
+            }
+        }
+
+        // Dashboard updates
+        function updateDashboard() {
+            const today = new Date().toDateString();
+            const thisMonth = new Date().getMonth();
+            const thisYear = new Date().getFullYear();
+            
+            // Today's revenue
+            const todayTransactions = transactions.filter(t => 
+                new Date(t.date).toDateString() === today
+            );
+            const todayRevenue = todayTransactions.reduce((sum, t) => sum + t.amount, 0);
+            document.getElementById('todayRevenue').textContent = todayRevenue.toFixed(0);
+            
+            // Monthly revenue
+            const monthlyTransactions = transactions.filter(t => {
+                const date = new Date(t.date);
+                return date.getMonth() === thisMonth && date.getFullYear() === thisYear;
+            });
+            const monthlyRevenue = monthlyTransactions.reduce((sum, t) => sum + t.amount, 0);
+            document.getElementById('monthlyRevenue').textContent = monthlyRevenue.toFixed(0);
+            
+            // Bills count
+            document.getElementById('billsCount').textContent = transactions.length;
+            
+            // Unique customers count
+            const uniqueCustomers = new Set(transactions.map(t => t.customer)).size;
+            document.getElementById('customersCount').textContent = uniqueCustomers;
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9761e5ca74fd8e81',t:'MTc1NjM2NDA3MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
